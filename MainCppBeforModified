@@ -1,0 +1,496 @@
+/*
+Main cpp
+
+*/
+
+
+#define _CRT_SECURE_NO_WARNINGS 1
+
+
+#include <SFML\Window.hpp>
+#include <SFML\Graphics.hpp>
+#include <stdio.h>
+
+#include "Box2D/Box2D.h"
+
+
+#include "userInterface.h"
+#include "maps.h"
+
+sf::RenderWindow window(sf::VideoMode(1200, 600), "First game");
+
+struct pos_t
+{
+	int x;
+	int y;
+	pos_t() : x(0), y(0) { }
+	pos_t(int _x, int _y) : x(_x), y(_y) { }
+};
+
+static pos_t start_pos;
+class TileMap : public sf::Drawable, public sf::Transformable
+{
+public:
+
+	bool load(const std::string& tileset, sf::Vector2u tileSize,  const int* tiles, unsigned int width, unsigned int height, b2World* world)
+	{
+
+		// load the tileset texture
+		if (!m_tileset.loadFromFile(tileset))
+			return false;
+
+		// resize the vertex array to fit the level size
+		m_vertices.setPrimitiveType(sf::Quads);
+		m_vertices.resize(width * height * 4);
+
+		
+		// populate the vertex array, with one quad per tile
+		for (unsigned int i = 0; i < width; ++i)
+			for (unsigned int j = 0; j < height; ++j)
+			{
+				
+				// get the current tile number
+				int tileNumber = tiles[i + j * width];
+
+				// find its position in the tileset texture
+				int tu = tileNumber % (m_tileset.getSize().x / tileSize.x);
+				// tilenumber % (130 / 32)  ==> tilenumber % 4.0625
+				int tv = tileNumber / (m_tileset.getSize().x / tileSize.x);
+
+				// get a pointer to the current tile's quad
+				sf::Vertex* quad = &m_vertices[(i + j * width) * 4];
+
+				// define its 4 corners
+				int fixJ = height - j-1;
+				quad[0].position = sf::Vector2f(i * tileSize.x, fixJ * tileSize.y);
+				quad[1].position = sf::Vector2f((i + 1) * tileSize.x, fixJ * tileSize.y);
+				quad[2].position = sf::Vector2f((i + 1) * tileSize.x, (fixJ + 1) * tileSize.y);
+				quad[3].position = sf::Vector2f(i * tileSize.x, (fixJ + 1) * tileSize.y);
+
+				// define its 4 texture coordinates
+				quad[0].texCoords = sf::Vector2f(tu * tileSize.x, tv * tileSize.y);
+				quad[1].texCoords = sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
+				quad[2].texCoords = sf::Vector2f((tu + 1) * tileSize.x, (tv + 1) * tileSize.y);
+				quad[3].texCoords = sf::Vector2f(tu * tileSize.x, (tv + 1) * tileSize.y);
+
+				if (tileNumber == 1)
+				{
+
+					//Set ground body
+					b2BodyDef tempBody;
+					//set position
+					tempBody.position.Set((quad[0].position.x + quad[1].position.x) / 4, (quad[0].position.y + quad[1].position.y) / 4+8);   //character body position
+
+					b2Body* tempbody = world->CreateBody(&tempBody);
+
+					b2PolygonShape tempbox;
+					//set size of ground box
+					tempbox.SetAsBox((quad[1].position.x - quad[0].position.x)/4, (quad[2].position.y - quad[1].position.y)/4);
+					tempbody->CreateFixture(&tempbox, 0.0f);
+					
+				}
+
+			}
+
+		return true;
+	}
+
+private:
+
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	{
+		// apply the transform
+		states.transform *= getTransform();
+
+		// apply the tileset texture
+		states.texture = &m_tileset;
+
+		// draw the vertex array
+		target.draw(m_vertices, states);
+	}
+
+	sf::VertexArray m_vertices;
+	sf::Texture m_tileset;
+};	
+
+
+enum Player_Status {
+	ground,
+	air
+};
+
+static Player_Status status = ground;
+
+
+class MyContactListener : public b2ContactListener {
+	
+	void BeginContact(b2Contact* contact)
+	{
+		/*void* bodyUserData = contact->GetFixtureA()->GetBody()->GetUserData();
+		
+		
+		if (bodyUserData)
+		{
+			status = ground;
+		}
+			
+		bodyUserData = contact->GetFixtureB()->GetBody()->GetUserData();
+		if (bodyUserData)
+		{
+			status = ground;
+		}*/
+		status = ground;
+/*
+		b2Fixture* fixtureA = contact->GetFixtureA();
+		b2Fixture* fixtureB = contact->GetFixtureB();
+		b2Body* body1 = fixtureA->GetBody();
+		b2Body* body2 = fixtureB->GetBody();
+		CheckContact = true;*/
+	}
+	
+
+	void EndContact(b2Contact* contact)
+	{
+		/*void* bodyUserData = contact->GetFixtureA()->GetBody()->GetUserData();
+		if (bodyUserData)
+		{
+			status = ground;
+		}
+		bodyUserData = contact->GetFixtureB()->GetBody()->GetUserData();
+		if (bodyUserData)
+		{
+			status = ground;
+		}*/
+		
+	}	
+};
+class debugDraw : public b2Draw  // child class : parent class
+	//Draw boxes using box2D engine 
+{
+	virtual void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override {
+		//sf::Vertex * sfVertices = new sf::Vertex[vertexCount];//Make Vertex array
+
+		//for (int i = 0; i < vertexCount; i++) {
+		//	sfVertices[i] = sf::Vertex(sf::Vector2f(vertices[i].x, vertices[i].y));// set Vertex x, y axis
+		//	sfVertices[i].color = sf::Color(color.r,color.g,color.b,color.a);//color red, green, blue and alph(brightness)
+		//}
+		//window.draw(sfVertices,vertexCount, sf::Lines);
+	}
+	
+
+	//DrawSolidPolygon draws ground and character rect.
+	virtual void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override {
+		int temp_VertexCount = vertexCount +1;
+		sf::Vertex * sfVertices = new sf::Vertex[temp_VertexCount];
+
+		for (int i = 0; i < temp_VertexCount; ++i) {
+			sfVertices[i] = sf::Vertex(sf::Vector2f(vertices[i].x, vertices[i].y));
+			sfVertices[i].color = sf::Color(color.r*255, color.g*255, color.b*255, color.a*255);
+		}
+		sfVertices[temp_VertexCount-1] = sfVertices[0];
+		window.draw(sfVertices, temp_VertexCount, sf::LinesStrip);
+	}
+
+	virtual void DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color)override {
+		int a = 2;
+	}
+
+	virtual void DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)override {
+		int a = 2;
+	}
+
+	virtual void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) override {
+		/*sf::Vertex * sfVertices = new sf::Vertex[2];
+
+		sfVertices[0] = sf::Vertex(sf::Vector2f(p1.x, p1.y)); 
+		sfVertices[0].color = sf::Color(color.r * 255, color.g * 255, color.b * 255, color.a * 255);
+
+		sfVertices[1] = sf::Vertex(sf::Vector2f(p2.x, p2.y));
+		sfVertices[1].color = sf::Color(color.r * 255, color.g * 255, color.b * 255, color.a * 255);
+		
+		window.draw(sfVertices, 2, sf::LinesStrip);*/
+	}
+
+	virtual void DrawTransform(const b2Transform& xf) override {
+		/*sf::Vertex *sfVertices = new sf::Vertex[1];
+		sfVertices[0] = sf::Vertex(sf::Vector2f(xf.p.x, xf.p.y));
+		sfVertices[0].color = sf::Color(255,0,0,255);
+
+		window.draw(sfVertices, 1, sf::Points);*/
+	}
+
+	virtual void DrawPoint(const b2Vec2& p, float32 size, const b2Color& color) override {
+		
+		/*sf::Vertex *sfVertices = new sf::Vertex[1];
+		sfVertices[0] = sf::Vertex(sf::Vector2f(p.x, p.y));
+		sfVertices[0].color = sf::Color(color.r * 255, color.g * 255, color.b * 255, color.a * 255);
+
+		window.draw(sfVertices, 1, sf::Points);*/
+	}
+
+};
+
+
+
+int main()
+{
+
+	b2Vec2 gravity(0.0f, -80.f);
+	b2World* world = new b2World(gravity);
+
+	MyContactListener contactListener;
+	world->SetContactListener(&contactListener);
+
+	TileMap buildmap;
+	//FILE* in;
+	//fopen_s(&in, "map.txt", "r");
+	//int tile[20][10];
+	//if (in == NULL)
+	//	exit(1);
+	//for (int mapcount = 0;; ++mapcount) {
+	//	int n, m;
+	//	if (fscanf_s(in, "%d %d\n", &n, &m) == EOF) break;
+	//	if (n == 0 || m == 0)break;
+	//	char buf[20];
+	//	for (int i = 0; i < n; ++i)
+	//	{
+	//		fscanf_s(in, "%s", buf, 20);
+
+	//		for (int j = 0; j < m; j++)
+	//		{
+	//			switch (buf[j])
+	//			{
+	//			case 2: start_pos.x = j;
+	//				start_pos.y = i;
+	//				break;
+	//			}
+	//		}
+	//	}
+	//}
+
+	/*const int tile[] =
+	{
+		1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	};*/
+	maps tilemap;
+	int *tile = tilemap.getmap();
+	
+	if (!buildmap.load("tileset.jpg", sf::Vector2u(32, 32), tile,20,10, world))
+		return -1;
+	buildmap.setScale(0.5f,0.5f);
+	
+	userInterface uI;
+	window.setFramerateLimit(60U);
+	sf::Image image;
+	sf::Event event;
+
+	sf::Sprite mapSprite;
+	sf::Sprite c_sprite;
+
+	debugDraw draw;
+	sf::Sprite player;
+
+
+	sf::Texture c_Texture = uI.getCharImage();
+	sf::Texture bgTexture = uI.getMapImage();
+	sf::View view2;
+
+	/* Modify scale and map size with views*/
+	mapSprite.setTexture(bgTexture);
+	mapSprite.setScale(sf::Vector2f(0.15f, 0.15f));
+	auto mapHeight = buildmap.getScale().y * 10*32;
+
+	//view2.setSize(sf::Vector2f(mapHeight * window.getSize().x / window.getSize().y, -mapHeight)); // set size of pixel of camera 
+	view2.setSize(sf::Vector2f(buildmap.getScale().x * 20 * 32, -mapHeight));
+	view2.setCenter(sf::Vector2f(view2.getSize().x / 2, -(view2.getSize().y / 2))); //set center pixel
+
+	c_sprite.setTexture(c_Texture);
+	c_sprite.setScale(sf::Vector2f(0.05f, 0.04f));
+	c_sprite.setOrigin(c_Texture.getSize().x / 2, c_Texture.getSize().y / 2);
+	
+	c_sprite.setPosition(start_pos.x,start_pos.y);
+
+
+	/*BOX2D INTERFACE*/
+
+	////Set ground body
+	//b2BodyDef groundBodyDef;
+	////set position
+	//groundBodyDef.position.Set(100.0, 10.0f);
+	//b2Body* groundBody = world->CreateBody(&groundBodyDef);
+
+	//b2PolygonShape groundBox;
+	////set size of ground box
+	//groundBox.SetAsBox(80.0f, 5.0f); 
+	//groundBody->CreateFixture(&groundBox, 0.0f);
+	//set Character Body
+	b2BodyDef bodyDef;
+	bodyDef.type = b2_dynamicBody;
+	//bodyDef.type = b2_kinematicBody;
+	//bodyDef.position.Set(groundBody->GetPosition().x, groundBody->GetPosition().y*4);   //character body position
+	bodyDef.position.Set(100.f, 100.f);
+
+	b2Body* body = world->CreateBody(&bodyDef);
+	b2PolygonShape dynamicBox;
+	dynamicBox.SetAsBox(c_sprite.getScale().x*c_Texture.getSize().x/2, c_sprite.getScale().y*c_Texture.getSize().y/2);
+
+	b2FixtureDef fixtureDef;
+	fixtureDef.shape = &dynamicBox;
+
+	fixtureDef.density = 200.0f;
+	fixtureDef.friction = 1.0f;
+	body->CreateFixture(&fixtureDef);
+
+	body->SetFixedRotation(0x0010);  // fix rotation
+	
+
+
+	//
+	////Setting Obstacle Bodies base on file
+	//
+	//int obstacles=;
+	//
+	//for (int i = 0; i < obstacles; i++)
+	//{
+	//	b2BodyDef O_BodyDef;
+	//	O_BodyDef.type = b2_staticBody;
+	//	O_BodyDef.position.Set(/*get position of each obstacle*/);
+	//	b2Body* O_Body = world.CreateBody(&O_BodyDef);
+	//	b2PolygonShape O_Box;
+	//	O_Box.SetAsBox(/*get Size of each obstacle*/);
+	//	O_Body->CreateFixture(&O_Box, 0.0f);
+
+	//}
+	
+	float32 timestep = 1.0f / 60.0f;
+	int32 velocityIterations = 6;
+	int32 positionIterations = 2;
+
+	uint32 flags = b2Draw::e_shapeBit | b2Draw::e_aabbBit | b2Draw::e_centerOfMassBit | b2Draw::e_jointBit
+		| b2Draw::e_pairBit;
+
+	draw.SetFlags(flags);
+
+	world->SetDebugDraw(&draw);
+
+/*
+
+	for (int32 i = 0; i < 60; ++i)
+	{
+		
+		
+	}*/
+	/*BOX2D END*/
+	
+
+	//Collision detection
+	bool contact = false;
+
+
+	while (window.isOpen())  //open window	
+	{
+		world->Step(timestep, velocityIterations, positionIterations);
+		
+		c_sprite.setPosition(body->GetPosition().x, body->GetPosition().y); // set sprite position same with character body box
+	
+		while (window.pollEvent(event))
+		{
+			switch (event.type)
+			{
+			case sf::Event::Closed:
+				window.close();
+				break;
+			case sf::Event::KeyPressed:
+
+				/*body->ApplyLinearImpulseToCenter(b2Vec2(0, 1000), true);*/
+				break;
+			case sf::Event::Resized:
+			{
+				sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+				window.setView(sf::View(visibleArea));
+			}
+			break;
+						
+			
+			default:
+					break;
+			} 
+		}
+
+
+		window.clear(sf::Color::White);
+
+		
+		
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		{
+			if (body->GetLinearVelocity().x == 0)
+				body->SetLinearVelocity(b2Vec2(-10, body->GetLinearVelocity().y));
+			if (body->GetLinearVelocity().x < -30)
+				body->SetLinearVelocity(b2Vec2(-30, body->GetLinearVelocity().y));
+			else
+				body->SetLinearVelocity(b2Vec2(body->GetLinearVelocity().x - 1, body->GetLinearVelocity().y));
+
+		
+		
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		{
+			if (body->GetLinearVelocity().x == 0)
+				body->SetLinearVelocity(b2Vec2(10, body->GetLinearVelocity().y));
+			else if (body->GetLinearVelocity().x > 30)
+				body->SetLinearVelocity(b2Vec2(30, body->GetLinearVelocity().y));
+			else
+				body->SetLinearVelocity(b2Vec2(body->GetLinearVelocity().x + 1, body->GetLinearVelocity().y));
+
+
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		{
+			switch (status)
+			{
+			case air: 
+				break;
+			case ground: 	
+				body->SetLinearVelocity(b2Vec2(body->GetLinearVelocity().x, 60));
+				status = air;
+				break;
+
+
+			}
+			//body->ApplyForce(b2Vec2(0, 5), b2Vec2(0, 0), true);
+			//body->ApplyForceToCenter(b2Vec2(0, 5), true);
+			//body->ApplyLinearImpulseToCenter(b2Vec2(0, 400), true);   //  apply impluse 'AT CENTER'
+
+		//body->ApplyForceToCenter(b2Vec2(0, -50), true);
+		}
+	
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+		{
+
+			c_sprite.move(0, -10);
+		}
+		
+		//uI.keyboardResp(key);
+		window.setView(view2);
+		
+		window.draw(buildmap);
+		window.draw(c_sprite);
+
+
+		world->DrawDebugData(); // Draw data in b2draw
+
+		/*sprite.setPosition(60, 60);
+		sprite.move(-10, -10);*/
+		window.display();
+	}
+}
