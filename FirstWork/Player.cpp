@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "global.h"
+#include "body_meta.h"
 
 Player::Player(sf::Texture _texture, sf::Sprite _sprite
 	, float _x, float _y
@@ -46,7 +47,7 @@ void Player::setBody(b2BodyType bodyType, bool fixRotation) {
 
 	plyBody->CreateFixture(&fixtureDef);
 
-	plyBody->SetUserData((int*)1);
+	plyBody->SetUserData(new BodyMeta {BODY_AVATAR, this});
 	if (fixRotation)
 		plyBody->SetFixedRotation(0x0010);
 }

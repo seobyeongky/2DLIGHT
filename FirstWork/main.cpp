@@ -19,8 +19,9 @@ Main cpp
 #include "applyBody.h"
 #include "maps.h"
 #include "loadImage.h"
+#include "World.h"
+
 sf::RenderWindow window(sf::VideoMode(1200, 600), "First game");
-b2World* world;
 applyBody bodyApplier;
 loadImage load_Image;
 sf::Font font;
@@ -32,41 +33,7 @@ enum Player_Status {
 };
 
 static Player_Status status = ground;
-typedef void(*collision_handler)();
 
-collision_handler table[10][10] = { nullptr, };
-
-class MyContactListener : public b2ContactListener {
-	
-	void BeginContact(b2Contact* contact)
-	{
-		void* bodyUserData = contact->GetFixtureA()->GetBody()->GetUserData();
-	
-		if (bodyUserData)
-		{
-		}
-			
-		void* bodyUserData2 = contact->GetFixtureB()->GetBody()->GetUserData();
-		if (bodyUserData2)
-		{
-		}
-
-		collision_handler handler = table[(int)bodyUserData][(int)bodyUserData2];
-
-		if (handler != nullptr)
-			handler();
-		b2Fixture* fixtureA = contact->GetFixtureA();
-		b2Fixture* fixtureB = contact->GetFixtureB();
-		b2Body* body1 = fixtureA->GetBody();
-		b2Body* body2 = fixtureB->GetBody();
-	}
-	
-
-	void EndContact(b2Contact* contact)
-	{
-	
-	}	
-};
 
 void on_zombie_human_collide()
 {
@@ -142,21 +109,25 @@ void drawReflectedRay(b2Vec2 p1, b2Vec2 p2)
 
 }
 
+void LoadFont()
+{
+	font.loadFromFile("arial.ttf");
+}
+
 
 int main()
 {
-	table[1][2] = table[2][1] = on_zombie_human_collide;
-	table[1][0] = table[0][1] = human_ground_collide;
-	font.loadFromFile("arial.ttf");
+	//table[1][2] = table[2][1] = on_zombie_human_collide;
+	//table[1][0] = table[0][1] = human_ground_collide;
+
+	LoadFont();
+
 	sf::Event event;
-	debugDraw draw;
 	movement move;
 	zombieAI zombie_AI;
-	b2Vec2 gravity(0.0f, -80.f);
-	world = new b2World(gravity);
-	MyContactListener contactListener;
-	world->SetContactListener(&contactListener);
-	
+
+	CreateWorld();
+
 	maps tilemap;
 	int *tile = tilemap.getmap();
 	TileMap buildmap= bodyApplier.applyMapTile("tileset.jpg", sf::Vector2u(32, 32), tile, 20, 10, world);
@@ -183,11 +154,6 @@ int main()
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
 
-	uint32 flags = b2Draw::e_shapeBit | b2Draw::e_aabbBit | b2Draw::e_centerOfMassBit | b2Draw::e_jointBit
-		| b2Draw::e_pairBit;
-
-	draw.SetFlags(flags);
-	world->SetDebugDraw(&draw);
 
 
 	

@@ -4,6 +4,7 @@ zombie.cpp
 */
 #include "zombie.h"
 #include "global.h"
+#include "body_meta.h"
 
 
 zombie::zombie(int zombieType, float _x, float _y, float left, float right) :
@@ -55,7 +56,7 @@ void zombie::setBody(b2BodyType bodyType, bool fixRotation)
 	fixtureDef.friction = zombieProperty.getPhysics('f');
 
 	z_body->CreateFixture(&fixtureDef);
-	z_body->SetUserData((int*)2);
+	z_body->SetUserData(new BodyMeta {BODY_ZOMBIE, this});
 	if (fixRotation)
 		z_body->SetFixedRotation(0x0010);
 }

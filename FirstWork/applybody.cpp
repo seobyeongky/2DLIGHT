@@ -7,6 +7,7 @@ Apply box2d body to all objects
 
 #include "applyBody.h"
 #include "global.h"
+#include "body_meta.h"
 
 bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int* tiles, unsigned int width, unsigned int height, b2World* world)
 {
@@ -53,7 +54,6 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
 			
 			if (tileNumber == 1 || tileNumber ==4 )
 			{
-
 				//Set ground body
 				b2BodyDef tempBody;
 				//set position
@@ -67,13 +67,12 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
 				
 				tempbody->CreateFixture(&tempbox, 0.0f);
 				if (tileNumber == 1)
-					tempbody->SetUserData(int(0));
+					tempbody->SetUserData(new BodyMeta{ BODY_GROUND, nullptr });
 				else if (tileNumber == 4)
-					tempbody->SetUserData((int*)(4));
+					tempbody->SetUserData(new BodyMeta{ BODY_WALL, nullptr });
 			}
 			else if (tileNumber == 2)
 			{
-
 				sf::Sprite _sprite = bodyApplier.loadSprite(1);
 				sf::Texture _texture = bodyApplier.getTexture();
 				Player plyr(_texture, _sprite,
@@ -154,42 +153,6 @@ void TileMap::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	target.draw(m_vertices, states);
 }
 
-
-void debugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
-
-	}
-
-void debugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) {
-		int temp_VertexCount = vertexCount + 1;
-		sf::Vertex * sfVertices = new sf::Vertex[temp_VertexCount];
-
-		for (int i = 0; i < temp_VertexCount; ++i) {
-			sfVertices[i] = sf::Vertex(sf::Vector2f(vertices[i].x, vertices[i].y));
-			sfVertices[i].color = sf::Color(color.r * 255, color.g * 255, color.b * 255, color.a * 255);
-		}
-		sfVertices[temp_VertexCount - 1] = sfVertices[0];
-		window.draw(sfVertices, temp_VertexCount, sf::LinesStrip);
-	}
-
-void debugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color) {
-
-	}
-
-void debugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color) {
-
-	}
-
-void debugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)  {
-
-	}
-
-void debugDraw::DrawTransform(const b2Transform& xf) {
-
-	}
-
-void debugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)  {
-
-	}
 
 
 applyBody::applyBody()
