@@ -5,7 +5,6 @@ zombie.cpp
 #include "zombie.h"
 #include "global.h"
 
-
 zombie::zombie(int zombieType, float _x, float _y, float left, float right) :
 	zombieType(zombieType),
 	leftEnd(left),rightEnd(right),currentX(_x),currentY(_y){
@@ -20,8 +19,8 @@ zombie::zombie(int zombieType, float _x, float _y, float left, float right) :
 	ori_position.x = _x;
 	ori_position.y = _y;
 	
-	z_Sprite = bodyApplier.loadSprite(zombieType+1);
-	z_Texture = bodyApplier.getTexture();
+	z_Sprite = imageLoad.getZombieSprite(zombieType+1);
+	z_Texture = imageLoad.getCharTexture();
 	switch (zombieType)
 	{
 	case 1:

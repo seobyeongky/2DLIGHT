@@ -1,13 +1,21 @@
 #include "zombieRule.h"
 #include "global.h"
+zombieRule::zombieRule(){}
+
+zombieRule::zombieRule(GameData* game_data)
+	:_gameData(game_data) {
+
+}
+
 
 bool zombieRule::checkPosition(b2Vec2 c_position)
 {
-	b2Vec2 ori_position = bodyApplier.getZombie(zombieIndex)->getOriPosition();
+	zombieIndex = _gameData->getIndex();
+	b2Vec2 ori_position = _gameData->getZombie(zombieIndex)->getOriPosition();
 	const float epsilon = 0.01;
-	if (c_position.x<bodyApplier.getZombie(zombieIndex)->rightEnd
+	if (c_position.x<_gameData->getZombie(zombieIndex)->rightEnd
 		&&
-		c_position.x>bodyApplier.getZombie(zombieIndex)->leftEnd)
+		c_position.x>_gameData->getZombie(zombieIndex)->leftEnd)
 	{
 		return true;
 	}
@@ -21,11 +29,14 @@ bool zombieRule::checkPosition(b2Vec2 c_position)
 
 b2Vec2 zombieRule::getOriPosition()
 {
-	return bodyApplier.getZombie(zombieIndex)->getOriPosition();
+	zombieIndex = _gameData->getIndex();
+	return _gameData->getZombie(zombieIndex)->getOriPosition();
 }
 
-void zombieRule::movementLimits(b2Body* z_body)
+void zombieRule::movementLimits(b2Body* z_body, GameData* gameData)
 {
+	if (_gameData == nullptr)
+		_gameData = gameData;
 	float x_speed = z_body->GetLinearVelocity().x;
 	float y_Speed = z_body->GetLinearVelocity().y;
 	if (x_speed < -(MAX_SPEED))
@@ -33,8 +44,10 @@ void zombieRule::movementLimits(b2Body* z_body)
 	else if (x_speed > MAX_SPEED)
 		z_body->SetLinearVelocity(b2Vec2(MAX_SPEED, y_Speed));
 }
-
-void zombieRule::setIndex(int i) { zombieIndex = i; }
+//
+//void zombieRule::setIndex(int i) { 
+//	zombieIndex = i; 
+//}
 
 moveDir zombieRule::x_chase(b2Vec2 start_position, b2Vec2 dest_position)
 {

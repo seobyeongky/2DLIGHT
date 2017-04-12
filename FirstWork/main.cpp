@@ -19,19 +19,21 @@ Main cpp
 #include "applyBody.h"
 #include "maps.h"
 #include "loadImage.h"
+#include "GameData.h"
+
 sf::RenderWindow window(sf::VideoMode(1200, 600), "First game");
 b2World* world;
 applyBody bodyApplier;
-loadImage load_Image;
 sf::Font font;
 
-enum Player_Status {
+enum Avatar_Status {
 	dead,
 	ground,
 	air
 };
 
-static Player_Status status = ground;
+static Avatar_Status player_status = ground;
+static Avatar_Status zombie_Status = ground;
 typedef void(*collision_handler)();
 
 collision_handler table[10][10] = { nullptr, };
@@ -70,12 +72,11 @@ class MyContactListener : public b2ContactListener {
 
 void on_zombie_human_collide()
 {
-	
-	status = dead;
+	player_status = dead;
 }
 void human_ground_collide()
 {
-	status = ground;
+	player_status = ground;
 }
 
 sf::VertexArray* vertices;
@@ -147,31 +148,37 @@ int main()
 {
 	table[1][2] = table[2][1] = on_zombie_human_collide;
 	table[1][0] = table[0][1] = human_ground_collide;
+	
+
 	font.loadFromFile("arial.ttf");
-	sf::Event event;
-	debugDraw draw;
-	movement move;
-	zombieAI zombie_AI;
+	
 	b2Vec2 gravity(0.0f, -80.f);
 	world = new b2World(gravity);
-	MyContactListener contactListener;
-	world->SetContactListener(&contactListener);
 	
 	maps tilemap;
 	int *tile = tilemap.getmap();
-	TileMap buildmap= bodyApplier.applyMapTile("tileset.jpg", sf::Vector2u(32, 32), tile, 20, 10, world);
+	TileMap buildmap= bodyApplier.applyMapTile(
+		"tileset.jpg", sf::Vector2u(32, 32), tile, 20, 10,
+		world);
 	buildmap.setScale(0.5f,0.5f);
 	window.setFramerateLimit(60U);
 
-
+	//////////////////////////////////////
+	GameData* gameData = bodyApplier.getGameData();
+	sf::Event event;
+	debugDraw draw;
+	movement move(gameData);
+	zombieAI zombie_AI(gameData, move);
+	MyContactListener contactListener;
+	world->SetContactListener(&contactListener);
 	auto mapHeight = buildmap.getScale().y * 10*32;
-
+	/////////////////////////////////////
 	sf::View view2;
 	view2.setSize(sf::Vector2f(buildmap.getScale().x * 20 * 32, -mapHeight));
 	view2.setCenter(sf::Vector2f(view2.getSize().x / 2, -(view2.getSize().y / 2))); //set center pixel
 
-	Player _player = bodyApplier.getPlayer();
-//	zombie* _zombie1 = bodyApplier.getZombie(1);
+	Player _player = gameData->getPlayer();
+//	zombie* _zombie1 = gameData->getZombie(1);
 
 	b2Body* body = _player.getBody();
 //	b2Body* z_body = _zombie1->getBody();
@@ -200,48 +207,28 @@ int main()
 		vertices = zombie_AI.getVertices();
 		vertices->clear();
 
-		for (float i = -30; i < 30; i++)
-		{
-			for (int j = 0; j < bodyApplier.zombieCount; j++)
-			{
-
-				b2Body* z_body = bodyApplier.getZombie(j)->getBody();
-				float currentRayAngle = i / 180 * M_PI;
-				float currentSpeed = z_body->GetLinearVelocity().x;
-				if (currentSpeed < 0)
-					currentRayAngle = (i + 180) / 180 * M_PI;
-				b2Vec2 p1(z_body->GetPosition().x, z_body->GetPosition().y); //center of scene
-				b2Vec2 p2 = p1 + rayLength * b2Vec2(cosf(currentRayAngle), sinf(currentRayAngle));
-			}
-		}
-
 		_sprite.setPosition(_player.getBody()->GetPosition().x,
 			_player.getBody()->GetPosition().y);
 
-		for (int i = 0; i < bodyApplier.zombieCount; i++)
+
+		for (int i = 0; i < gameData->zombie_count; i++)
 		{
-			b2Body* z_body = bodyApplier.getZombie(i)->getBody();
-			zombie_AI.setIndex(i);
+			b2Body* z_body = gameData->getZombie(i)->getBody();
+			gameData->setIndex(i);
 			zombie_AI.zombie_AI(body);
-		/*}
-		
-		_sprite.setPosition(_player.getBody()->GetPosition().x,
-			_player.getBody()->GetPosition().y);
 
-
-		for (int i = 0; i < bodyApplier.zombieCount; i++)
-		{*/
-			sf::Sprite* z_sprite = bodyApplier.getZombie(i)->getSprite();
-			z_sprite->setPosition(bodyApplier.getZombie(i)->getBody()->GetPosition().x,
-				bodyApplier.getZombie(i)->getBody()->GetPosition().y);
-			sf::Text* dbug = bodyApplier.getZombie(i)->getText();
+			sf::Sprite* z_sprite = gameData->getZombie(i)->getSprite();
+			z_sprite->setPosition(
+				gameData->getZombie(i)->getBody()->GetPosition().x,
+				gameData->getZombie(i)->getBody()->GetPosition().y);
+			sf::Text* dbug = gameData->getZombie(i)->getText();
 			dbug->setPosition(z_sprite->getPosition());
 		}
 		
-		if (status == dead)
+		if (player_status == dead)
 		{
 			body->SetTransform(b2Vec2(100.f, 50.f), 0);
-			status = air;
+			player_status = air;
 		}
 		world->Step(timestep, velocityIterations, positionIterations);
 		while (window.pollEvent(event))
@@ -270,12 +257,11 @@ int main()
 
 		window.clear(sf::Color::White);
 
-		//study below codes
-		for (int i = 0; i < bodyApplier.zombieCount; i++)
+		for (int i = 0; i < gameData->zombie_count; i++)
 		{
-			b2Body* z_body = bodyApplier.getZombie(i)->getBody();
-			zombie* _zombie1 = bodyApplier.getZombie(i);
-			zombie_AI.setIndex(i);
+			b2Body* z_body = gameData->getZombie(i)->getBody();
+			zombie* _zombie1 = gameData->getZombie(i);
+			gameData->setIndex(i);
 			if (!zombie_AI.status.detact_player)
 			{
 					
@@ -292,14 +278,14 @@ int main()
 			}
 			else
 			{
-				zombie_AI.zombieStatus(z_body, body);
+				zombie_AI.chase(z_body, body);
 			}
 		}
 		////////////////////////////////////
 		///Check the input of the keyboard
 		///
 		////////////////////////////////////
-		for (int i = 0; i < 151; i++)
+		/*for (int i = 0; i < 151; i++)
 		{
 			if (event.key.code == -1)
 				break;
@@ -307,31 +293,7 @@ int main()
 			{
 				break;
 			}
-
-//			int keyCodePressed = event.key.code;
-	//		if (keyCodePressed == -1)
-		//		break;
-		}
-/*
-		switch (event.key.code)
-		{
-		case sf::Keyboard::Left:
-			move.movePlayer(body, LEFT);
-			break;
-		case sf::Keyboard::Right:
-			move.movePlayer(body, RIGHT);
-			break;
-		case sf::Keyboard::Space:
-			if (status == ground)
-			{
-				move.movePlayer(body, UP);
-				status = air;
-			}
-			break;
-		default:
-			break;
-		}*/
-
+*/
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			move.movePlayer(body, LEFT);
@@ -339,13 +301,13 @@ int main()
 			move.movePlayer(body, RIGHT);
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			switch (status)
+			switch (player_status)
 			{
 			case air:
 				break;
 			case ground:
 				move.movePlayer(body, UP);
-				status = air;
+				player_status = air;
 				break;
 			}
 		}
@@ -359,10 +321,10 @@ int main()
 	
 		vertices->setPrimitiveType(sf::Lines);
 		window.draw(*vertices);
-		for (int i = 0; i < bodyApplier.zombieCount; i++)
+		for (int i = 0; i < gameData->zombie_count; i++)
 		{
-			window.draw(*bodyApplier.getZombie(i)->getSprite());
-			window.draw(*bodyApplier.getZombie(i)->getText());
+			window.draw(*gameData->getZombie(i)->getSprite());
+			window.draw(*gameData->getZombie(i)->getText());
 		}
 
 		window.display();

@@ -2,6 +2,9 @@
 #include "global.h"
 #include <SFML\Graphics.hpp>
 
+movement::movement() {}
+movement::movement(GameData* gamedata)
+	:gameData(gamedata){}
 void movement::movePlayer(b2Body* body, moveDir dir)
 {
 	if (dir == LEFT)
@@ -75,7 +78,7 @@ void movement::jumpZombie(b2Body * body)
 void movement::moveZombie_default(b2Body* body, moveDir dir)
 {
 
-	sf::Text* txt = bodyApplier.getZombie(_index)->getText();
+	sf::Text* txt = gameData->getZombie(_index)->getText();
 	switch (dir)
 	{
 	case LEFT:
@@ -95,7 +98,7 @@ void movement::moveZombie_default(b2Body* body, moveDir dir)
 
 void movement::moveZombie_setSpeed(b2Body * body, moveDir dir, b2Vec2 speed)
 {
-	sf::Text* txt = bodyApplier.getZombie(_index)->getText();
+	sf::Text* txt = gameData->getZombie(_index)->getText();
 	switch (dir)
 	{
 	case LEFT:

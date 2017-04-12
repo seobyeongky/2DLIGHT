@@ -8,7 +8,9 @@ Apply box2d body to all objects
 #include "applyBody.h"
 #include "global.h"
 
-bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int* tiles, unsigned int width, unsigned int height, b2World* world)
+bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, 
+	const int* tiles, unsigned int width, unsigned int height, 
+	b2World* world, GameData* gameData)
 {
 
 	// load the tileset texture
@@ -73,41 +75,40 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
 			}
 			else if (tileNumber == 2)
 			{
-
-				sf::Sprite _sprite = bodyApplier.loadSprite(1);
-				sf::Texture _texture = bodyApplier.getTexture();
+				sf::Sprite _sprite = imageLoad.getPlyrSprite();
+				sf::Texture _texture = imageLoad.getCharTexture();
 				Player plyr(_texture, _sprite,
 					(quad[0].position.x + quad[1].position.x) / 4,
 					(quad[0].position.y + quad[1].position.y) / 4 + 8,
 					_sprite.getScale().x*_texture.getSize().x / 2,
 					_sprite.getScale().y*_texture.getSize().y / 2,
 					200.0f, 0.05f);
-				//Texture, sprite, X position, Y position, width, height
-				
 				plyr.setBody(b2_dynamicBody, true);
-
 				_sprite = plyr.getSprite();
 				_sprite.setPosition(plyr.getBody()->GetPosition().x,
 					plyr.getBody()->GetPosition().y);
 
-				bodyApplier.setPlyr(plyr);
-
-
-
-				//sf::Sprite sprite = bodyApplier.loadSprite(1);
-				//texture = bodyApplier.getTexture();
-				//bodyApplier.setBoxSize(sprite.getScale().x*texture.getSize().x / 2
-				//	, sprite.getScale().y*texture.getSize().y / 2);
-				//bodyApplier.setPhysics(200.0f, 1.0f);
-				//bodyApplier.setPosition((quad[0].position.x + quad[1].position.x) / 4,
-				//	(quad[0].position.y + quad[1].position.y) / 4 + 8);
+				gameData->setPlayer(plyr);
+				//sf::Sprite _sprite = gameData->loadSprite(1);
+				//sf::Texture _texture = bodyAppiler.getTexture();
+				//Player plyr(_texture, _sprite,
+				//	(quad[0].position.x + quad[1].position.x) / 4,
+				//	(quad[0].position.y + quad[1].position.y) / 4 + 8,
+				//	_sprite.getScale().x*_texture.getSize().x / 2,
+				//	_sprite.getScale().y*_texture.getSize().y / 2,
+				//	200.0f, 0.05f);
+				////Texture, sprite, X position, Y position, width, height
 				//
-				//
-				//b2Body* body = bodyApplier.setBody(b2_dynamicBody, true);
-				//body->SetUserData((int*)1);
-				//bodyApplier.setPlayer(body);
-				//sprite.setPosition(body->GetPosition().x, body->GetPosition().y); // set sprite position same with character body box
-				//window.draw(sprite);
+				//plyr.setBody(b2_dynamicBody, true);
+
+				//_sprite = plyr.getSprite();
+				//_sprite.setPosition(plyr.getBody()->GetPosition().x,
+				//	plyr.getBody()->GetPosition().y);
+
+				//gameData->setPlyr(plyr);
+
+
+
 
 			}
 			
@@ -121,20 +122,12 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
 				float left_End = currentX - length;
 				float right_End = currentX + length;
 				zombie * z_1 = new zombie(1, currentX, currentY, left_End, right_End);
+				
 				z_1->setBody(b2_dynamicBody, true);
-				bodyApplier.setZombie(z_1);
+				gameData->setZombie(z_1);
+				
+				//gameData->setZombie(z_1);
 
-				////bodyApplier.setBoxSize(c_sprite.getScale().x*c_texture.getSize().x / 2, c_sprite.getScale().y*c_texture.getSize().y / 2);
-				//sf::Sprite sprite = bodyApplier.loadSprite(2);
-				//texture = bodyApplier.getTexture();
-				//bodyApplier.setBoxSize(sprite.getScale().x*texture.getSize().x / 2, sprite.getScale().y*texture.getSize().y / 2);
-				//bodyApplier.setPhysics(200.0f, 1.0f);
-				//bodyApplier.setPosition((quad[0].position.x + quad[1].position.x) / 4, (quad[0].position.y + quad[1].position.y) / 4 + 8);
-				//b2Body* z_body = bodyApplier.setBody(b2_dynamicBody, true);
-				//
-				//z_body->SetUserData((int*)2);
-				//sprite.setPosition(z_body->GetPosition().x, z_body->GetPosition().y); // set sprite position same with character body box
-				//window.draw(sprite);
 
 			}
 		}
@@ -193,53 +186,55 @@ void debugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)  
 
 
 applyBody::applyBody()
-	: zombieCount(0), _zombies(new zombie*[3])
-{
+	/*: zombieCount(0), _zombies(new zombie*[3])*/
+{}
 
-}
-
-TileMap applyBody::applyMapTile(const std::string& tileset, sf::Vector2u tileSize, const int* tile, unsigned int width, unsigned int height, b2World* world)
+TileMap applyBody::applyMapTile(const std::string& tileset, sf::Vector2u tileSize,
+	const int* tile, unsigned int width, unsigned int height, b2World* world)
 {
 	TileMap buildmap;
-	if (!buildmap.load("tileset.jpg", sf::Vector2u(32, 32), tile, 20, 10, world))
+	if (!buildmap.load("tileset.jpg", sf::Vector2u(32, 32), tile,
+		20, 10, world, getGameData()))
 		exit(1);
 	return buildmap;
 }
 
-void applyBody::setPlyr(Player player) {
-	_player = player;
-}
+GameData* applyBody::getGameData() { return &save_data; }
 
-void applyBody::setZombie(zombie* zombiePtr)
-{
-	*(_zombies+zombieCount) = zombiePtr;
-	zombieCount++;
-}
-
-sf::Sprite applyBody::loadSprite(int obj)
-{
-	tmpTexture = load_Image.getCharTexture();
-	switch (obj) {
-	case 1:
-		tmpSprite = load_Image.getCharSprite();
-		break;
-	case 2:
-		tmpSprite = load_Image.getZombieSprite();
-		break;
-	case 3:
-		break;
-	case 4:
-		break;
-	}
-
-	return tmpSprite;
-}
-
-zombie* applyBody::getZombie(int index)
-{
-	return *(_zombies + (index));
-}
-
-sf::Texture applyBody::getTexture() { return tmpTexture; }
-
-Player applyBody::getPlayer() { return _player; }
+//void applyBody::setPlyr(Player player) {
+//	_player = player;
+//}
+//
+//void applyBody::setZombie(zombie* zombiePtr)
+//{
+//	*(_zombies+zombieCount) = zombiePtr;
+//	zombieCount++;
+//}
+//
+//sf::Sprite applyBody::loadSprite(int obj)
+//{
+//	tmpTexture = load_Image.getCharTexture();
+//	switch (obj) {
+//	case 1:
+//		tmpSprite = load_Image.getCharSprite();
+//		break;
+//	case 2:
+//		tmpSprite = load_Image.getZombieSprite();
+//		break;
+//	case 3:
+//		break;
+//	case 4:
+//		break;
+//	}
+//
+//	return tmpSprite;
+//}
+//
+//zombie* applyBody::getZombie(int index)
+//{
+//	return *(_zombies + (index));
+//}
+//
+//sf::Texture applyBody::getTexture() { return tmpTexture; }
+//
+//Player applyBody::getPlayer() { return _player; }

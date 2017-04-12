@@ -10,8 +10,8 @@ public:
 	loadImage();
 	sf::Texture seperateImage(int left, int top, int width, int height);
 	sf::Texture getCharTexture();
-	sf::Sprite getCharSprite();
-	sf::Sprite getZombieSprite();
+	sf::Sprite getPlyrSprite();
+	sf::Sprite getZombieSprite(int i);
 
 private:
 	sf::Sprite charSprite;

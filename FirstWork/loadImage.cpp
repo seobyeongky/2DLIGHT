@@ -29,7 +29,7 @@ sf::Texture loadImage::getCharTexture()
 	return charTexture;
 }
 
-sf::Sprite loadImage::getCharSprite()
+sf::Sprite loadImage::getPlyrSprite()
 {
 	charSprite.setTexture(charTexture);
 	charSprite.setScale(sf::Vector2f(0.1f, 0.075f));
@@ -38,11 +38,16 @@ sf::Sprite loadImage::getCharSprite()
 	return charSprite;
 }
 
-sf::Sprite loadImage::getZombieSprite()
+sf::Sprite loadImage::getZombieSprite(int i)
 {
-	zombieSprite.setTexture(zombieTexture);
-	zombieSprite.setScale(sf::Vector2f(0.1f, 0.075f));
-	zombieSprite.setOrigin(zombieTexture.getSize().x / 2, zombieTexture.getSize().y / 2);
+	switch (i)
+	{
+	case 1:
+		zombieSprite.setTexture(zombieTexture);
+		zombieSprite.setScale(sf::Vector2f(0.1f, 0.075f));
+		zombieSprite.setOrigin(zombieTexture.getSize().x / 2, zombieTexture.getSize().y / 2);
+		break;
 
+	}
 	return zombieSprite;
 }

@@ -8,28 +8,35 @@ zombieAI.cppp
 #include "global.h"
 #include <math.h>
 
-int zombieAI::zombie_index=0;
-void zombieAI::setIndex(int index)
-{
-	zombie_index = index;
-	move.setIndex(index);
-	rule.setIndex(index);
-}
 
+zombieAI::zombieAI(GameData* _gamedata, movement _move)
+	:gameData(_gamedata), move(_move) {
+
+	zombieRule rule(gameData);
+}
+//
+//void zombieAI::setIndex(int index)
+//{
+//	zombie_index = index;
+//	move.setIndex(index);
+//	rule.setIndex(index);
+//}
 
 void zombieAI::defaultPatrol(b2Body* z_body, zombie* _zombie,b2Vec2 set_speed)
 {
 
 	b2Vec2 position = z_body->GetPosition();
 	b2Vec2 speed = z_body->GetLinearVelocity();
-	rule.movementLimits(z_body); //check and limit zombie speed 
+	rule.movementLimits(z_body, gameData); //check and limit zombie speed 
 	if (rule.checkPosition(position))
 	{
 		if (set_speed == b2Vec2(0, 0))
 		{
 			/*if (position.x == _zombie->currentX)
 				move.moveZombie_default(z_body, LEFT);
-			else */if (speed.x <= 0 && speed.x>-30)
+			else */
+			
+			if (speed.x <= 0 && speed.x>-30)
 				move.moveZombie_default(z_body, LEFT);
 			else if (speed.x > 0 && speed.x < 30)
 				move.moveZombie_default(z_body, RIGHT);
@@ -98,7 +105,8 @@ sf::VertexArray* zombieAI::getVertices()
 
 void zombieAI::zombie_AI(b2Body* p_body)
 {
-	b2Body* z_body = bodyApplier.getZombie(zombie_index)->getBody();
+	int zombie_index = gameData->getIndex();
+	b2Body* z_body = gameData->getZombie(zombie_index)->getBody();
 	b2Vec2 z_position = z_body->GetPosition();
 	b2Vec2 goal_position = p_body->GetPosition();
 
@@ -110,7 +118,8 @@ void zombieAI::zombie_AI(b2Body* p_body)
 		if (currentSpeed < 0)
 			currentRayAngle = (i + 180) / 180 * M_PI;
 
-		b2Vec2 p1(z_body->GetPosition().x, z_body->GetPosition().y); //center of scene
+		b2Vec2 p1(z_body->GetPosition().x, 
+			z_body->GetPosition().y); //center of scene
 		b2Vec2 p2 = p1 + rayLength * b2Vec2(cosf(currentRayAngle), sinf(currentRayAngle));
 
 		rayCasting(p1, p2);
@@ -119,7 +128,8 @@ void zombieAI::zombie_AI(b2Body* p_body)
 		{
 		case 1:
 			status.detact_player = true;
-			continue;/*
+			continue;
+			/*
 		case 4:
 			status.detact_wall = true;
 			continue;*/
@@ -144,12 +154,12 @@ void zombieAI::runToGoal(b2Body * zombie, b2Vec2 dest_position)
 			break;
 	}while (zombie_position == dest_position);
 }
-
-void zombieAI::zombieStatus(b2Body* z_body, b2Body* p_body)
-{
-	if (status.detact_player)
-		chase( z_body, p_body);
-}
+//
+//void zombieAI::zombieStatus(b2Body* z_body, b2Body* p_body)
+//{
+//	if (status.detact_player)
+//		chase( z_body, p_body);
+//}
 void zombieAI::chase(b2Body * z_body, b2Body * p_body)
 {
 	b2Vec2 zombie_position = z_body->GetPosition();

@@ -3,6 +3,8 @@
 zombieAI.h
 */
 #include <Box2D\Box2D.h>
+
+#include "GameData.h"
 #include "zombie.h"
 #include "movement.h"
 #include "zombieRule.h"
@@ -16,7 +18,7 @@ struct zombie_status {
 
 class zombieAI {
 public:
-
+	zombieAI(GameData* gamedata, movement move);
 	zombie_status status;
 	void defaultPatrol(b2Body* z_body, zombie* zombie, b2Vec2 speed);
 	
@@ -28,15 +30,15 @@ public:
 	sf::VertexArray* getVertices();
 
 	void runToGoal(b2Body* zombie, b2Vec2 position);
-	void zombieStatus(b2Body* z_body, b2Body* p_body);
-	void setIndex(int index);
+	//void zombieStatus(b2Body* z_body, b2Body* p_body);
+	//void setIndex(int index);
 	int* get_value();
 
 
 private:
-	static int zombie_index;
 	movement move;
 	zombieRule rule;
+	GameData* gameData;
 	float rayLength = 50;
 	sf::VertexArray vertices;
 	int* _value = (int*)5;

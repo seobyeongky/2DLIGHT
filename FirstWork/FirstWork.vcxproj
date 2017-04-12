@@ -120,6 +120,7 @@
     <ClCompile Include="Ai_BFS.cpp" />
     <ClCompile Include="applybody.cpp" />
     <ClCompile Include="AvatarProperty.cpp" />
+    <ClCompile Include="GameData.cpp" />
     <ClCompile Include="global.cpp" />
     <ClCompile Include="loadImage.cpp" />
     <ClCompile Include="main.cpp" />
@@ -134,6 +135,7 @@
     <ClInclude Include="Ai_BFS.h" />
     <ClInclude Include="applyBody.h" />
     <ClInclude Include="AvatarProperty.h" />
+    <ClInclude Include="GameData.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="zombieRule.h" />
     <ClInclude Include="loadImage.h" />
