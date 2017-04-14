@@ -24,6 +24,10 @@ sf::Texture loadImage::seperateImage(int left, int top, int width, int height)
 	return fullImage;
 }
 
+sf::Texture loadImage::getZombieTexture()
+{
+	return zombieTexture;
+}
 sf::Texture loadImage::getCharTexture()
 {
 	return charTexture;

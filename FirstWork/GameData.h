@@ -7,21 +7,19 @@
 class GameData {
 public:
 	GameData();
-	//GameData(int i);
-	/*sf::Texture getTexture();
-	sf::Sprite getSprite(int sprite_num);*/
-	void setPlayer(Player player);
+	GameData(int i);
+	void setPlayer(Player* player);
 	void setZombie(zombie* zombie_ptr);
 	void setIndex(int index);
 	zombie* getZombie(int index);
-	Player getPlayer();
+	Player* getPlayer();
 	int getIndex();
 	
 
-	int zombie_count = 0;
+	static int zombie_count;
 
 private:
-	Player _player;
+	Player** _player;
 	zombie** _zombie;
 	loadImage load_Image;
 	int zombie_index;

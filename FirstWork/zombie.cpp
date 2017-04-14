@@ -19,8 +19,8 @@ zombie::zombie(int zombieType, float _x, float _y, float left, float right) :
 	ori_position.x = _x;
 	ori_position.y = _y;
 	
-	z_Sprite = imageLoad.getZombieSprite(zombieType+1);
-	z_Texture = imageLoad.getCharTexture();
+	z_Sprite = imageLoad.getZombieSprite(zombieType);
+	z_Texture = imageLoad.getZombieTexture();
 	switch (zombieType)
 	{
 	case 1:

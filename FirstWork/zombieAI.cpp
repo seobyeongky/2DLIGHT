@@ -10,9 +10,9 @@ zombieAI.cppp
 
 
 zombieAI::zombieAI(GameData* _gamedata, movement _move)
-	:gameData(_gamedata), move(_move) {
+	:gameData(_gamedata), move(_move),rule(_gamedata) {
 
-	zombieRule rule(gameData);
+	//zombieRule rule(gameData);
 }
 //
 //void zombieAI::setIndex(int index)

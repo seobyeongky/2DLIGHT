@@ -75,40 +75,11 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize,
 			}
 			else if (tileNumber == 2)
 			{
-				sf::Sprite _sprite = imageLoad.getPlyrSprite();
-				sf::Texture _texture = imageLoad.getCharTexture();
-				Player plyr(_texture, _sprite,
-					(quad[0].position.x + quad[1].position.x) / 4,
-					(quad[0].position.y + quad[1].position.y) / 4 + 8,
-					_sprite.getScale().x*_texture.getSize().x / 2,
-					_sprite.getScale().y*_texture.getSize().y / 2,
-					200.0f, 0.05f);
-				plyr.setBody(b2_dynamicBody, true);
-				_sprite = plyr.getSprite();
-				_sprite.setPosition(plyr.getBody()->GetPosition().x,
-					plyr.getBody()->GetPosition().y);
-
+				float _x = (quad[0].position.x + quad[1].position.x) / 4;
+				float _y = (quad[0].position.y + quad[1].position.y) / 4 + 8;
+				Player* plyr = new Player(_x, _y, 200.f, 0.05f);
+				plyr->setBody(b2_dynamicBody, true);
 				gameData->setPlayer(plyr);
-				//sf::Sprite _sprite = gameData->loadSprite(1);
-				//sf::Texture _texture = bodyAppiler.getTexture();
-				//Player plyr(_texture, _sprite,
-				//	(quad[0].position.x + quad[1].position.x) / 4,
-				//	(quad[0].position.y + quad[1].position.y) / 4 + 8,
-				//	_sprite.getScale().x*_texture.getSize().x / 2,
-				//	_sprite.getScale().y*_texture.getSize().y / 2,
-				//	200.0f, 0.05f);
-				////Texture, sprite, X position, Y position, width, height
-				//
-				//plyr.setBody(b2_dynamicBody, true);
-
-				//_sprite = plyr.getSprite();
-				//_sprite.setPosition(plyr.getBody()->GetPosition().x,
-				//	plyr.getBody()->GetPosition().y);
-
-				//gameData->setPlyr(plyr);
-
-
-
 
 			}
 			
@@ -125,8 +96,6 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize,
 				
 				z_1->setBody(b2_dynamicBody, true);
 				gameData->setZombie(z_1);
-				
-				//gameData->setZombie(z_1);
 
 
 			}
@@ -190,15 +159,19 @@ applyBody::applyBody()
 {}
 
 TileMap applyBody::applyMapTile(const std::string& tileset, sf::Vector2u tileSize,
-	const int* tile, unsigned int width, unsigned int height, b2World* world)
+	const int* tile, unsigned int width, unsigned int height, b2World* world, GameData* dataSample)
 {
 	TileMap buildmap;
+	setGameData(dataSample);
 	if (!buildmap.load("tileset.jpg", sf::Vector2u(32, 32), tile,
 		20, 10, world, getGameData()))
 		exit(1);
 	return buildmap;
 }
-
+void applyBody::setGameData(GameData* gameData)
+{
+	save_data = *gameData;
+}
 GameData* applyBody::getGameData() { return &save_data; }
 
 //void applyBody::setPlyr(Player player) {

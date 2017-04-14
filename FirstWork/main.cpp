@@ -150,6 +150,7 @@ int main()
 	table[1][0] = table[0][1] = human_ground_collide;
 	
 
+	GameData* gameData = new GameData();
 	font.loadFromFile("arial.ttf");
 	
 	b2Vec2 gravity(0.0f, -80.f);
@@ -159,12 +160,11 @@ int main()
 	int *tile = tilemap.getmap();
 	TileMap buildmap= bodyApplier.applyMapTile(
 		"tileset.jpg", sf::Vector2u(32, 32), tile, 20, 10,
-		world);
+		world, gameData);
 	buildmap.setScale(0.5f,0.5f);
 	window.setFramerateLimit(60U);
 
 	//////////////////////////////////////
-	GameData* gameData = bodyApplier.getGameData();
 	sf::Event event;
 	debugDraw draw;
 	movement move(gameData);
@@ -177,14 +177,10 @@ int main()
 	view2.setSize(sf::Vector2f(buildmap.getScale().x * 20 * 32, -mapHeight));
 	view2.setCenter(sf::Vector2f(view2.getSize().x / 2, -(view2.getSize().y / 2))); //set center pixel
 
-	Player _player = gameData->getPlayer();
-//	zombie* _zombie1 = gameData->getZombie(1);
-
-	b2Body* body = _player.getBody();
-//	b2Body* z_body = _zombie1->getBody();
-	//sf::Sprite _sprite = load_Image.getCharSprite(); 
+	Player* _player = gameData->getPlayer();
+	b2Body* body = _player->getBody();
 	
-	sf::Sprite _sprite = _player.getSprite();
+	sf::Sprite* _sprite = _player->getSprite();
 
 	float32 timestep = 1.0f / 60.0f;
 	int32 velocityIterations = 6;
@@ -197,7 +193,10 @@ int main()
 	world->SetDebugDraw(&draw);
 
 
-	
+	///////////////////////////////////////
+	loadImage image_load;
+	sf::Sprite testSprite = image_load.getPlyrSprite();
+	///////////////////////////////////////
 
 
 	while (window.isOpen())  //open window	
@@ -207,9 +206,12 @@ int main()
 		vertices = zombie_AI.getVertices();
 		vertices->clear();
 
-		_sprite.setPosition(_player.getBody()->GetPosition().x,
-			_player.getBody()->GetPosition().y);
+		_sprite->setPosition(_player->getBody()->GetPosition().x,
+			_player->getBody()->GetPosition().y);
+		/////////////////////////////
 
+		testSprite.setPosition(_sprite->getPosition().x-15, _sprite->getPosition().y);
+		/////////////////////////////////
 
 		for (int i = 0; i < gameData->zombie_count; i++)
 		{
@@ -221,6 +223,7 @@ int main()
 			z_sprite->setPosition(
 				gameData->getZombie(i)->getBody()->GetPosition().x,
 				gameData->getZombie(i)->getBody()->GetPosition().y);
+
 			sf::Text* dbug = gameData->getZombie(i)->getText();
 			dbug->setPosition(z_sprite->getPosition());
 		}
@@ -317,7 +320,6 @@ int main()
 		window.setView(view2);
 		window.draw(buildmap);
 		world->DrawDebugData(); // Draw data in b2draw
-		window.draw(_sprite);
 	
 		vertices->setPrimitiveType(sf::Lines);
 		window.draw(*vertices);
@@ -326,7 +328,8 @@ int main()
 			window.draw(*gameData->getZombie(i)->getSprite());
 			window.draw(*gameData->getZombie(i)->getText());
 		}
-
+		window.draw(*_sprite);
+		//window.draw(testSprite);
 		window.display();
 	}
 }

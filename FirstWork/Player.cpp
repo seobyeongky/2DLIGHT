@@ -1,12 +1,13 @@
 #include "Player.h"
 #include "global.h"
 
-Player::Player(sf::Texture _texture, sf::Sprite _sprite
-	, float _x, float _y
-	, float _width, float _height
-	, float _density, float _friction) :
-
-	plyTexture(_texture), plySprite(_sprite) {
+Player::Player( float _x, float _y, float _density, float _friction) 
+{
+	plySprite = imageLoad.getPlyrSprite();
+	plyTexture = imageLoad.getCharTexture();
+	
+	float _width = plySprite.getScale().x*plyTexture.getSize().x / 2;
+	float _height = plySprite.getScale().y*plyTexture.getSize().y / 2;
 	
 	plyProperty.setPosition(_x, _y);
 	plyProperty.setBoxSize(_width, _height);
@@ -22,8 +23,8 @@ sf::Texture Player::getTexture() {
 	return plyTexture;
 }
 
-sf::Sprite Player::getSprite() {
-	return plySprite;
+sf::Sprite *Player::getSprite() {
+	return &plySprite;
 }
 
 void Player::setBody(b2BodyType bodyType, bool fixRotation) {

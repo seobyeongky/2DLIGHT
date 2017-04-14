@@ -42,10 +42,10 @@ class applyBody {
 public:
 	TileMap applyMapTile(const std::string& tileset, sf::Vector2u tileSize,
 		const int* tile, unsigned int width, unsigned int height,
-		b2World* world);
+		b2World* world, GameData* dataSample);
 
 	applyBody();
-
+	void setGameData(GameData* gameData);
 	GameData* getGameData();
 	//sf::Sprite loadSprite(int object);
 	//sf::Texture getTexture();
