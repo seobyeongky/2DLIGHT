@@ -20,6 +20,7 @@ Main cpp
 #include "maps.h"
 #include "loadImage.h"
 #include "World.h"
+#include "renderer.h"
 
 sf::RenderWindow window(sf::VideoMode(1200, 600), "First game");
 applyBody bodyApplier;
@@ -121,6 +122,7 @@ int main()
 	//table[1][0] = table[0][1] = human_ground_collide;
 
 	LoadFont();
+	MakeRenderer();
 
 	sf::Event event;
 	movement move;
@@ -316,13 +318,11 @@ int main()
 			}
 		}
 		
-
-
 		window.setView(view2);
 		window.draw(buildmap);
 		world->DrawDebugData(); // Draw data in b2draw
 		window.draw(_sprite);
-	
+
 		vertices->setPrimitiveType(sf::Lines);
 		window.draw(*vertices);
 		for (int i = 0; i < bodyApplier.zombieCount; i++)
@@ -330,6 +330,8 @@ int main()
 			window.draw(*bodyApplier.getZombie(i)->getSprite());
 			window.draw(*bodyApplier.getZombie(i)->getText());
 		}
+
+		renderer->RenderAll();
 
 		window.display();
 	}

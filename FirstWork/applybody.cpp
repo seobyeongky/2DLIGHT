@@ -8,6 +8,9 @@ Apply box2d body to all objects
 #include "applyBody.h"
 #include "global.h"
 #include "body_meta.h"
+#include "physical_sprite.h"
+
+using namespace sf;
 
 bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int* tiles, unsigned int width, unsigned int height, b2World* world)
 {
@@ -54,22 +57,12 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
 			
 			if (tileNumber == 1 || tileNumber ==4 )
 			{
-				//Set ground body
-				b2BodyDef tempBody;
-				//set position
-				tempBody.position.Set((quad[0].position.x + quad[1].position.x) / 4, (quad[0].position.y + quad[1].position.y) / 4 + 8);   //character body position
-
-				b2Body* tempbody = world->CreateBody(&tempBody);
-
-				b2PolygonShape tempbox;
-				//set size of ground box
-				tempbox.SetAsBox((quad[1].position.x - quad[0].position.x) / 4, (quad[2].position.y - quad[1].position.y) / 4);
-				
-				tempbody->CreateFixture(&tempbox, 0.0f);
-				if (tileNumber == 1)
-					tempbody->SetUserData(new BodyMeta{ BODY_GROUND, nullptr });
-				else if (tileNumber == 4)
-					tempbody->SetUserData(new BodyMeta{ BODY_WALL, nullptr });
+				sf::Vector2f pos((quad[0].position.x + quad[1].position.x) / 4, (quad[0].position.y + quad[1].position.y) / 4 + 8);
+				new PhysicalSprite(pos
+					, Sprite()
+					, tileNumber == 1 ? BODY_GROUND : BODY_WALL
+					, (quad[1].position.x - quad[0].position.x) / 4
+					, (quad[2].position.y - quad[1].position.y) / 4);
 			}
 			else if (tileNumber == 2)
 			{
@@ -92,22 +85,6 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
 				bodyApplier.setPlyr(plyr);
 
 
-
-				//sf::Sprite sprite = bodyApplier.loadSprite(1);
-				//texture = bodyApplier.getTexture();
-				//bodyApplier.setBoxSize(sprite.getScale().x*texture.getSize().x / 2
-				//	, sprite.getScale().y*texture.getSize().y / 2);
-				//bodyApplier.setPhysics(200.0f, 1.0f);
-				//bodyApplier.setPosition((quad[0].position.x + quad[1].position.x) / 4,
-				//	(quad[0].position.y + quad[1].position.y) / 4 + 8);
-				//
-				//
-				//b2Body* body = bodyApplier.setBody(b2_dynamicBody, true);
-				//body->SetUserData((int*)1);
-				//bodyApplier.setPlayer(body);
-				//sprite.setPosition(body->GetPosition().x, body->GetPosition().y); // set sprite position same with character body box
-				//window.draw(sprite);
-
 			}
 			
 			
@@ -123,17 +100,7 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
 				z_1->setBody(b2_dynamicBody, true);
 				bodyApplier.setZombie(z_1);
 
-				////bodyApplier.setBoxSize(c_sprite.getScale().x*c_texture.getSize().x / 2, c_sprite.getScale().y*c_texture.getSize().y / 2);
-				//sf::Sprite sprite = bodyApplier.loadSprite(2);
-				//texture = bodyApplier.getTexture();
-				//bodyApplier.setBoxSize(sprite.getScale().x*texture.getSize().x / 2, sprite.getScale().y*texture.getSize().y / 2);
-				//bodyApplier.setPhysics(200.0f, 1.0f);
-				//bodyApplier.setPosition((quad[0].position.x + quad[1].position.x) / 4, (quad[0].position.y + quad[1].position.y) / 4 + 8);
-				//b2Body* z_body = bodyApplier.setBody(b2_dynamicBody, true);
-				//
-				//z_body->SetUserData((int*)2);
-				//sprite.setPosition(z_body->GetPosition().x, z_body->GetPosition().y); // set sprite position same with character body box
-				//window.draw(sprite);
+
 
 			}
 		}

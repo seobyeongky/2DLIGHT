@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -27,26 +27,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -69,8 +69,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\HwanYou\Documents\Box2D-master\Box2D-master\Box2D;C:\Users\HwanYou\Documents\SFML-2.4.2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\HwanYou\Documents\Box2D-master\Box2D-master\Box2D\Build\vs2015\bin\x32\Debug;C:\Users\HwanYou\Documents\SFML-2.4.2\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\dev\Box2D\Box2D;D:\dev\SFML-2.4.2-windows-vc14-32-bit\SFML-2.4.2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\dev\Box2D\Box2D\Build\vs2015\bin\x32\Debug;D:\dev\SFML-2.4.2-windows-vc14-32-bit\SFML-2.4.2\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -117,24 +117,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="actor.cpp" />
     <ClCompile Include="Ai_BFS.cpp" />
     <ClCompile Include="applybody.cpp" />
     <ClCompile Include="AvatarProperty.cpp" />
-    <ClCompile Include="global.cpp" />
     <ClCompile Include="loadImage.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="maps.cpp" />
     <ClCompile Include="movement.cpp" />
+    <ClCompile Include="physical_sprite.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="world.cpp" />
     <ClCompile Include="zombie.cpp" />
     <ClCompile Include="zombieAI.cpp" />
     <ClCompile Include="zombieRule.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="actor.h" />
     <ClInclude Include="Ai_BFS.h" />
     <ClInclude Include="applyBody.h" />
     <ClInclude Include="AvatarProperty.h" />
+    <ClInclude Include="body_meta.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="global.h" />
+    <ClInclude Include="physical_sprite.h" />
+    <ClInclude Include="renderer.h" />
+    <ClInclude Include="window.h" />
+    <ClInclude Include="world.h" />
     <ClInclude Include="zombieRule.h" />
     <ClInclude Include="loadImage.h" />
     <ClInclude Include="maps.h" />
